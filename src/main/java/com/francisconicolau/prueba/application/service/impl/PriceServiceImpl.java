@@ -6,7 +6,6 @@ import com.francisconicolau.prueba.domain.repository.PriceRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -19,8 +18,19 @@ public class PriceServiceImpl implements PriceService {
     }
 
 
+    /**
+     * Busca el precio para un producto, marca y fecha ordenados.
+     * Consulta para obtener los precios que coinciden con los parámetros ordenados por prioridad
+     * y devuelve el primero, que tenga mayor prioridad.
+     * Si no hay resultados, devuelve un Optional vacío.
+     *
+     * @param date      the date and time
+     * @param productId the ID of the product
+     * @param brandId   the ID of the brand
+     * @return Optional<Price>, or empty if none found
+     */
     public Optional<Price> getApplicablePrice(LocalDateTime date, Long productId, Long brandId) {
-        List<Price> prices = priceRepository.findApplicablePrices(date, productId, brandId);
+        var prices = priceRepository.findApplicablePrices(date, productId, brandId);
         return prices.stream().findFirst();
     }
 

@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 @Table(name = "prices")
 public class Price {
 
+    //optional constructor to avoid exposing the ID of Price entity
     public Price(Long brandId, Long productId, Integer priceList, Integer priority,
                  BigDecimal price, LocalDateTime startDate, LocalDateTime endDate, String currency) {
         this.brandId = brandId;

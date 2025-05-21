@@ -1,8 +1,8 @@
-package com.francisconicolau.prueba.application.service;
+package com.francisconicolau.prueba.application;
 
 import com.francisconicolau.prueba.application.service.impl.PriceServiceImpl;
 import com.francisconicolau.prueba.domain.model.Price;
-import com.francisconicolau.prueba.domain.repository.PriceRepository;
+import com.francisconicolau.prueba.infrastructure.persistence.JpaPriceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
 
 
@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 class PriceServiceTest {
 
     @Mock
-    private PriceRepository priceRepository;
+    private JpaPriceRepository priceRepository;
 
     @InjectMocks
     private PriceServiceImpl priceService;
@@ -42,10 +42,10 @@ class PriceServiceTest {
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenReturn(List.of(expected));
 
-        Optional<Price> result = priceService.getApplicablePrice(date, productId, brandId);
+        Optional<Price> current = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(expected.getPrice(), result.get().getPrice());
-        assertEquals(expected.getPriceList(), result.get().getPriceList());
+        assertEquals(expected.getPrice(), current.get().getPrice());
+        assertEquals(expected.getPriceList(), current.get().getPriceList());
     }
 
     @Test
@@ -56,12 +56,12 @@ class PriceServiceTest {
         Price high = buildPrice(2, 1, new BigDecimal("25.45"), "2020-06-14T15:00:00", "2020-06-14T18:30:00");
 
         when(priceRepository.findApplicablePrices(date, productId, brandId))
-                .thenReturn(List.of(high, low)); // Orden por prioridad ya hecho
+                .thenReturn(List.of(high, low));
 
-        Optional<Price> result = priceService.getApplicablePrice(date, productId, brandId);
+        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(high.getPrice(), result.get().getPrice());
-        assertEquals(high.getPriceList(), result.get().getPriceList());
+        assertEquals(high.getPrice(), actual.get().getPrice());
+        assertEquals(high.getPriceList(), actual.get().getPriceList());
     }
 
     @Test
@@ -74,9 +74,9 @@ class PriceServiceTest {
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenReturn(List.of(expected));
 
-        Optional<Price> result = priceService.getApplicablePrice(date, productId, brandId);
+        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(expected.getPrice(), result.get().getPrice());
+        assertEquals(expected.getPrice(), actual.get().getPrice());
     }
 
     @Test
@@ -89,9 +89,9 @@ class PriceServiceTest {
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenReturn(List.of(expected));
 
-        Optional<Price> result = priceService.getApplicablePrice(date, productId, brandId);
+        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(expected.getPrice(), result.get().getPrice());
+        assertEquals(expected.getPrice(), actual.get().getPrice());
     }
 
     @Test
@@ -104,9 +104,36 @@ class PriceServiceTest {
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenReturn(List.of(expected));
 
-        Optional<Price> result = priceService.getApplicablePrice(date, productId, brandId);
+        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(expected.getPrice(), result.get().getPrice());
+        assertEquals(expected.getPrice(), actual.get().getPrice());
+    }
+
+    @Test
+    @DisplayName("No se encuentra precio para la fecha, producto y marca")
+    void test6_empty_result() {
+        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 10, 0);
+
+        when(priceRepository.findApplicablePrices(date, productId, brandId))
+                .thenReturn(List.of());
+
+        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
+
+        assertTrue(actual.isEmpty(), "Resultado vacio");
+    }
+
+    @Test
+    @DisplayName("Manejo de excepción")
+    void testRepository_throws_exception() {
+        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 10, 0);
+
+        when(priceRepository.findApplicablePrices(date, productId, brandId))
+                .thenThrow(new RuntimeException("Error en BD"));
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+                priceService.getApplicablePrice(date, productId, brandId));
+
+        assertEquals("Error en BD", exception.getMessage());
     }
 
     private Price buildPrice(int priceList, int priority, BigDecimal price, String start, String end) {
