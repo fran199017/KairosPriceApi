@@ -33,104 +33,58 @@ class PriceServiceTest {
 
 
     @Test
-    @DisplayName("Test 1: 14 de junio a las 10:00")
-    void test1() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 10, 0);
-        Price expected = buildPrice(1, 0, new BigDecimal("35.50"),
-                "2020-06-14T00:00:00", "2020-12-31T23:59:59");
+    @DisplayName("Unico precio disponible")
+    void test1_one_element() {
+        var date = LocalDateTime.of(2020, 6, 14, 10, 0);
+        var price = buildPrice(1, 0, new BigDecimal("35.50"), "2020-06-14T00:00:00", "2020-12-31T23:59:59");
 
         when(priceRepository.findApplicablePrices(date, productId, brandId))
-                .thenReturn(List.of(expected));
+                .thenReturn(List.of(price));
 
-        Optional<Price> current = priceService.getApplicablePrice(date, productId, brandId);
+        var actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(expected.getPrice(), current.get().getPrice());
-        assertEquals(expected.getPriceList(), current.get().getPriceList());
+        assertTrue(actual.isPresent());
+        assertEquals(price, actual.get());
     }
 
+
     @Test
-    @DisplayName("Test 2: 14 de junio a las 16:00")
-    void test2() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 16, 0);
-        Price low = buildPrice(1, 0, new BigDecimal("35.50"), "2020-06-14T00:00:00", "2020-12-31T23:59:59");
-        Price high = buildPrice(2, 1, new BigDecimal("25.45"), "2020-06-14T15:00:00", "2020-06-14T18:30:00");
+    @DisplayName("Devuelve varios elementos pero coge el primer precio de la lista cuando hay varios")
+    void test2_empty_result() {
+        var date = LocalDateTime.of(2020, 6, 14, 16, 0);
+        var price1 = buildPrice(2, 1, new BigDecimal("25.45"), "2020-06-14T15:00:00", "2020-06-14T18:30:00");
+        var price2 = buildPrice(1, 0, new BigDecimal("35.50"), "2020-06-14T00:00:00", "2020-12-31T23:59:59");
 
         when(priceRepository.findApplicablePrices(date, productId, brandId))
-                .thenReturn(List.of(high, low));
+                .thenReturn(List.of(price1, price2));
 
-        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
+        var actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertEquals(high.getPrice(), actual.get().getPrice());
-        assertEquals(high.getPriceList(), actual.get().getPriceList());
+        assertTrue(actual.isPresent());
+        assertEquals(price1, actual.get());
     }
-
     @Test
-    @DisplayName("Test 3: 14 de junio a las 21:00")
-    void test3() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 21, 0);
-        Price expected = buildPrice(1, 0, new BigDecimal("35.50"),
-                "2020-06-14T00:00:00", "2020-12-31T23:59:59");
-
-        when(priceRepository.findApplicablePrices(date, productId, brandId))
-                .thenReturn(List.of(expected));
-
-        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
-
-        assertEquals(expected.getPrice(), actual.get().getPrice());
-    }
-
-    @Test
-    @DisplayName("Test 4: 15 de junio a las 10:00")
-    void test4() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 15, 10, 0);
-        Price expected = buildPrice(3, 1, new BigDecimal("30.50"),
-                "2020-06-15T00:00:00", "2020-06-15T11:00:00");
-
-        when(priceRepository.findApplicablePrices(date, productId, brandId))
-                .thenReturn(List.of(expected));
-
-        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
-
-        assertEquals(expected.getPrice(), actual.get().getPrice());
-    }
-
-    @Test
-    @DisplayName("Test 5: 16 de junio a las 21:00")
-    void test5() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 16, 21, 0);
-        Price expected = buildPrice(4, 1, new BigDecimal("38.95"),
-                "2020-06-15T16:00:00", "2020-12-31T23:59:59");
-
-        when(priceRepository.findApplicablePrices(date, productId, brandId))
-                .thenReturn(List.of(expected));
-
-        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
-
-        assertEquals(expected.getPrice(), actual.get().getPrice());
-    }
-
-    @Test
-    @DisplayName("No se encuentra precio para la fecha, producto y marca")
-    void test6_empty_result() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 10, 0);
+    @DisplayName("Lista vacia sin precios")
+    void test3_empty_result() {
+        var date = LocalDateTime.of(2020, 6, 14, 10, 0);
 
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenReturn(List.of());
 
         Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
 
-        assertTrue(actual.isEmpty(), "Resultado vacio");
+        assertTrue(actual.isEmpty());
     }
 
     @Test
     @DisplayName("Manejo de excepción")
-    void testRepository_throws_exception() {
-        LocalDateTime date = LocalDateTime.of(2020, 6, 14, 10, 0);
+    void test4_throws_exception() {
+        var date = LocalDateTime.of(2020, 6, 14, 10, 0);
 
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenThrow(new RuntimeException("Error en BD"));
 
-        RuntimeException exception = assertThrows(RuntimeException.class, () ->
+        var exception = assertThrows(RuntimeException.class, () ->
                 priceService.getApplicablePrice(date, productId, brandId));
 
         assertEquals("Error en BD", exception.getMessage());
@@ -140,4 +94,5 @@ class PriceServiceTest {
         return new Price(brandId, productId, priceList, priority, price,
                 LocalDateTime.parse(start), LocalDateTime.parse(end), "EUR");
     }
+
 }

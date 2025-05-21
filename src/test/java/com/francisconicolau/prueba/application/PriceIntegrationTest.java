@@ -98,4 +98,27 @@ class PriceIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
     }
+
+    @Test
+    @DisplayName("Test Error: Tipo incorrecto en param brandId")
+    void test_bad_param_format() throws Exception {
+        mockMvc.perform(get("/api/prices")
+                        .param("date", "2020-06-14T10:00:00")
+                        .param("productId", "35455")
+                        .param("brandId", "a"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.message").value("Parameter 'brandId' with wrong type"));
+    }
+
+    @Test
+    @DisplayName("Test Error: Formato inválido en fecha")
+    void test_invalid_date_format() throws Exception {
+        mockMvc.perform(get("/api/prices")
+                        .param("date", "14-06-2020") // mal formato
+                        .param("productId", "35455")
+                        .param("brandId", "1"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("BAD_REQUEST"));
+    }
 }
