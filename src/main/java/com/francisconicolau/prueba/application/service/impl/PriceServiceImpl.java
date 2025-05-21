@@ -30,8 +30,7 @@ public class PriceServiceImpl implements PriceService {
      * @return Optional<Price>, or empty if none found
      */
     public Optional<Price> getApplicablePrice(LocalDateTime date, Long productId, Long brandId) {
-        var prices = priceRepository.findApplicablePrices(date, productId, brandId);
-        return prices.stream().findFirst();
+        return priceRepository.findApplicablePrices(date, productId, brandId).stream().findFirst();
     }
 
 }

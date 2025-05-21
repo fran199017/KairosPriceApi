@@ -13,7 +13,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
@@ -71,7 +70,7 @@ class PriceServiceTest {
         when(priceRepository.findApplicablePrices(date, productId, brandId))
                 .thenReturn(List.of());
 
-        Optional<Price> actual = priceService.getApplicablePrice(date, productId, brandId);
+        var actual = priceService.getApplicablePrice(date, productId, brandId);
 
         assertTrue(actual.isEmpty());
     }

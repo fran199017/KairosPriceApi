@@ -1,17 +1,12 @@
 package com.francisconicolau.prueba.infrastructure.web.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.francisconicolau.prueba.domain.model.Price;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 public class PriceResponseDto {
 
     private Long productId;
@@ -21,4 +16,12 @@ public class PriceResponseDto {
     private LocalDateTime endDate;
     private BigDecimal price;
 
+    public PriceResponseDto(Price price) {
+        this.productId = price.getProductId();
+        this.brandId = price.getBrandId();
+        this.priceList = price.getPriceList();
+        this.price = price.getPrice();
+        this.startDate = price.getStartDate();
+        this.endDate = price.getEndDate();
+    }
 }

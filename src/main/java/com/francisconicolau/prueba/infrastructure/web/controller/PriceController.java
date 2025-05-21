@@ -45,14 +45,8 @@ public class PriceController {
             Long brandId) {
 
         return priceService.getApplicablePrice(date, productId, brandId)
-                .map(price -> ResponseEntity.ok(new PriceResponseDto(
-                        price.getProductId(),
-                        price.getBrandId(),
-                        price.getPriceList(),
-                        price.getStartDate(),
-                        price.getEndDate(),
-                        price.getPrice()
-                )))
-                .orElseThrow(() -> new PriceNotFoundException("No se han encontrado coincidencias de precio con los parámetros de entrada."));
+                .map(price -> ResponseEntity.ok(new PriceResponseDto(price)))
+                .orElseThrow(() ->
+                        new PriceNotFoundException("No se han encontrado coincidencias de precio con los parámetros de entrada."));
     }
 }

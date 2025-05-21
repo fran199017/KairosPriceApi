@@ -2,6 +2,8 @@ package com.francisconicolau.prueba.infrastructure.persistence;
 
 import com.francisconicolau.prueba.domain.model.Price;
 import com.francisconicolau.prueba.domain.repository.PriceRepository;
+import com.francisconicolau.prueba.infrastructure.persistence.jpa.JpaPriceRepositoryDao;
+import com.francisconicolau.prueba.infrastructure.persistence.mapper.PriceEntityMapper;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -18,6 +20,8 @@ public class JpaPriceRepository implements PriceRepository {
 
     @Override
     public List<Price> findApplicablePrices(LocalDateTime applicationDate, Long productId, Long brandId) {
-        return jpaRepository.findApplicablePrices(applicationDate, productId, brandId);
+        return jpaRepository.findApplicablePrices(applicationDate, productId, brandId)
+                .stream()
+                .map(PriceEntityMapper::toDomain).toList();
     }
 }
